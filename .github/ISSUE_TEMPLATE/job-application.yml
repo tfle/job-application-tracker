@@ -1,0 +1,31 @@
+name: Job application
+description: Track a new job application
+
+title: "[Company] Position"
+
+body:
+  - type: input
+    id: link
+    attributes:
+      label: Link to job ad
+
+  - type: input
+    id: opening-date
+    attributes:
+      label: Opening date
+      placeholder: YYYY-MM-DD
+
+  - type: input
+    id: closing-date
+    attributes:
+      label: Closing date
+      placeholder: YYYY-MM-DD
+
+  - type: checkboxes
+    id: reminders
+    attributes:
+      label: Set reminders
+      description: Requires the relevant dates to be provided above in the correct format
+      options:
+        - label: Send a reminder when applications open
+        - label: Send a reminder before applications close
