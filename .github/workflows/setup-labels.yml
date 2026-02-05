@@ -1,0 +1,78 @@
+name: Setup Labels
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/labels.yml
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const yaml = require('js-yaml');
+            const path = '.github/labels.yml';
+
+            // Read labels from file
+            const data = fs.readFileSync(path, 'utf8');
+            const labels = yaml.load(data);
+
+            // Fetch existing repo labels
+            // e.g. existingLabels = [ { name: 'Applied', color: ... }, ...]
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const existingLabels = await github.paginate(
+              github.rest.issues.listLabelsForRepo,
+              { owner, repo, per_page: 100 }
+            );
+            
+            // Index labels by name for easy lookup
+            // e.g. existingLabelsMap = { 'Applied': { name: 'Applied', color: ... }, ... }
+            const existingLabelsMap = Object.fromEntries(
+              existingLabels.map(l => [l.name, l])
+            );
+
+            // Create or update labels
+            for (const label of labels) {
+              if (existingLabelsMap[label.name]) {
+                // Update existing label if needed
+                await github.rest.issues.updateLabel({
+                  owner,
+                  repo,
+                  name: label.name,
+                  new_name: label.name,
+                  color: label.color || '000000',
+                  description: label.description || '',
+                });
+              } else {
+                // Create new label
+                await github.rest.issues.createLabel({
+                  owner,
+                  repo,
+                  name: label.name,
+                  color: label.color || '000000',
+                  description: label.description || '',
+                });
+              }
+            }
+
+            // Delete any labels not in the file
+            const labelNames = labels.map(l => l.name);
+            for (const oldLabel of existingLabels) {
+              if (!labelNames.includes(oldLabel.name)) {
+                await github.rest.issues.deleteLabel({
+                  owner,
+                  repo,
+                  name: oldLabel.name,
+                });
+              }
+            }
