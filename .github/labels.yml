@@ -1,39 +1,39 @@
 - name: "Applied"
-  color: D73A4A
+  color: "D73A4A"
   description: "Application submitted"
 
 - name: "Phone Interview"
-  color: FBCA04
+  color: "FBCA04"
   description: "Phone screen scheduled/completed"
 
 - name: "Online Assessment"
-  color: E4E669
+  color: "E4E669"
   description: "OA received/completed"
 
 - name: "Assessment Centre"
-  color: 0E8A16
+  color: "0E8A16"
   description: "Assessment centre scheduled/completed"
 
 - name: "Interview"
-  color: 0052CC
+  color: "0052CC"
   description: "Interview scheduled/completed"
 
 - name: "Final Interview"
-  color: 5319E7
+  color: "5319E7"
   description: "Final round scheduled/completed"
 
 - name: "Offer"
-  color: B602DA
+  color: "B602DA"
   description: "Offer received"
 
 - name: "Rejected"
-  color: 6E7781
+  color: "6E7781"
   description: "Application rejected"
 
 - name: "Accepted"
-  color: 1D76DB
+  color: "1D76DB"
   description: "Offer accepted"
 
 - name: "Declined"
-  color: FEF2C0
+  color: "FEF2C0"
   description: "Offer declined"
