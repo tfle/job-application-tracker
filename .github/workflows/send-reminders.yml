@@ -1,0 +1,144 @@
+name: Send Reminders
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: npm install date-fns
+
+      - name: Send reminders
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { parse, isValid, isToday, subDays } = require('date-fns');
+            const { owner, repo } = context.repo;
+            const CLOSING_REMINDER_DAYS = 7;
+            
+            const MARKER_OPEN = '<!-- automation: opening reminder -->';
+            const MARKER_CLOSE = '<!-- automation: closing reminder -->';
+                        
+            const ISSUE_FORM_REGEX = new RegExp(
+              '### Opening date\\n+' +
+              '(?<openingDate>[^\\n]+)\\n+' +
+              '### Closing date\\n+' +
+              '(?<closingDate>[^\\n]+)\\n+' +
+              '### Set reminders\\n+' +
+              '- \\[(?<openingReminder>x| )] Send a reminder when applications open\\n' +
+              '- \\[(?<closingReminder>x| )] Send a reminder before applications close',
+              'm'
+            );
+            
+            // Helper function: check if an issue has an open/close marker in a comment
+            async function hasMarkerComment(issueNumber, marker) {
+              const comments = await github.paginate(github.rest.issues.listComments, {
+                owner, repo, issue_number: issueNumber, per_page: 100
+              });
+              return comments.some(comment => comment.body.includes(marker));
+            }
+            
+            // Helper function: check if an issue has an 'Applied' label
+            async function hasAppliedLabel(issueNumber) {
+              const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+                owner, repo, issue_number: issueNumber
+              });
+              return labels.some(label => label.name === 'Applied');
+            }
+            
+            // Helper function: parse the issue body and extract relevant info
+            function parseForm(issue) {
+              const match = (issue.body || '').match(ISSUE_FORM_REGEX);
+              if (!match?.groups) return null;
+            
+              return {
+                openingDate: parse(match.groups.openingDate.trim(), 'yyyy-MM-dd', new Date()),
+                closingDate: parse(match.groups.closingDate.trim(), 'yyyy-MM-dd', new Date()),
+                wantsOpeningReminder: match.groups.openingReminder === 'x',
+                wantsClosingReminder: match.groups.closingReminder === 'x',
+              };
+            }
+            
+            // Helper function: check form contents if opening reminder can be sent
+            function canSendOpening(form) {
+              return (
+                form.wantsOpeningReminder &&
+                isValid(form.openingDate) &&
+                isToday(form.openingDate)
+              );
+            }
+
+            // Helper function: check form contents if closing reminder can be sent
+            function canSendClosing(form) {
+              return (
+                form.wantsClosingReminder &&
+                isValid(form.closingDate) &&
+                isToday(subDays(form.closingDate, CLOSING_REMINDER_DAYS))
+              );
+            }
+            
+            // Helper function: post opening reminder comment on an issue
+            async function postOpeningReminder(issueNumber) {
+              const body = [
+                MARKER_OPEN,
+                `### Reminder: Applications open today!`,
+                `This is an automated reminder that applications open today.`,
+                `If you've already applied, don't forget to add the "Applied" label.`
+              ].join('\n');
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: issueNumber, body
+              });
+            }
+
+            // Helper function: post closing reminder comment on an issue
+            async function postClosingReminder(issueNumber) {
+              const body = [
+                MARKER_CLOSE,
+                `### Reminder: Applications close soon!`,
+                `This is an automated reminder that applications close soon.`,
+                `If you've already applied, don't forget to add the "Applied" label.`
+              ].join('\n');
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: issueNumber, body
+              });
+            }
+            
+            // --- Main loop ---
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: "open", per_page: 100
+            });
+
+            for (const issue of issues) {
+              const form = parseForm(issue);
+              if (!form) continue;
+            
+              const applied = await hasAppliedLabel(issue.number);
+            
+              // Opening reminder
+              if (canSendOpening(form) &&
+                  !applied &&
+                  !(await hasMarkerComment(issue.number, MARKER_OPEN))
+              ) {
+                await postOpeningReminder(issue.number);
+                core.info(`Posted opening reminder for issue #${issue.number}.`);
+              }
+            
+              // Closing reminder
+              if (canSendClosing(form) &&
+                  !applied &&
+                  !(await hasMarkerComment(issue.number, MARKER_CLOSE))
+              ) {
+                await postClosingReminder(issue.number);
+                core.info(`Posted closing reminder for issue #${issue.number}.`);
+              }
+            }
