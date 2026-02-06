@@ -1,0 +1,123 @@
+name: Generate Sankey Diagram
+
+on:
+  workflow_dispatch:
+  issues:
+    types: [opened, closed, labeled, unlabeled]
+
+permissions:
+  issues: read
+  contents: write
+
+jobs:
+  generate-sankey:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: npm install js-yaml
+
+      - name: Generate Sankey diagram
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const yaml = require('js-yaml');
+            const { owner, repo } = context.repo;
+            
+            const DEFAULT_CONFIG = `---
+            config:
+              sankey:
+                nodeAlignment: justify
+                prefix: ' ('
+                suffix: ')'
+            ---
+            `;
+            
+            // Helper function: sort labels by predefined order from labels.yml
+            function sortLabels(labels, labelOrder) {
+              return labels
+                .map(label => label.name)
+                .filter(name => labelOrder.includes(name))
+                .sort((a, b) => labelOrder.indexOf(a) - labelOrder.indexOf(b));
+            }
+            
+            // Helper function: generate all the label transitions for a given issue
+            function generateTransitionLines(issue, sortedLabels) {
+              const lines = [];
+            
+              // Add Mermaid comment to demarcate transitions for each issue
+              lines.push(`%% Issue #${issue.number}: ${issue.title}`);
+            
+              // Generate transitions
+              for (let i = 0; i < sortedLabels.length - 1; i++) {
+                const from = sortedLabels[i];
+                const to = sortedLabels[i + 1];
+                lines.push(`${from},${to},1`);
+              }
+            
+              return lines;
+            }
+            
+            try {
+              // Load label order from labels.yml
+              const data = fs.readFileSync('.github/labels.yml', 'utf8');
+              const labels = yaml.load(data);
+              const labelOrder = labels.map(label => label.name);
+            
+              // Load Sankey config from sankey-config.yml
+              let configSection;
+              try {
+                configSection = fs.readFileSync('.github/sankey-config.yml', 'utf8');
+              } catch (error) {
+                // Config file doesn't exist, use default
+                core.warning('sankey-config.yml not found, using default config');
+                configSection = DEFAULT_CONFIG;
+              }
+            
+              // --- Main loop to build Sankey diagram (in issueSections) ---
+              const issueSections = [];
+            
+              const issues = await github.paginate(
+                github.rest.issues.listForRepo,
+                { owner, repo, state: 'all', per_page: 100 }
+              );
+            
+              for (const issue of issues) {
+                const sortedLabels = sortLabels(issue.labels, labelOrder);
+            
+                // Skip issues without any flow to visualise
+                if (sortedLabels.length < 2) {
+                  continue;
+                }
+            
+                const issueSection = generateTransitionLines(issue, sortedLabels);
+                issueSections.push(issueSection.join('\n'));
+              }
+            
+              // Build the complete file content
+              const mermaidDiagram = `\`\`\`mermaid
+            ${configSection}sankey
+            ${issueSections.join('\n\n')}
+            \`\`\``;
+            
+              // Write the complete file
+              fs.writeFileSync('sankey.md', mermaidDiagram);
+              core.notice('Sankey diagram successfully generated!');
+            } catch (error) {
+              core.error(`Failed to generate Sankey diagram: ${error.message}`);
+              throw error;
+            }
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sankey.md
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update Sankey diagram"
+            git push
+          fi
