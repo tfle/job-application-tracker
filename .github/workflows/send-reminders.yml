@@ -70,7 +70,7 @@ jobs:
             }
             
             // Helper function: check form contents if opening reminder can be sent
-            function canSendOpening(form) {
+            function canSendOpeningReminder(form) {
               return (
                 form.wantsOpeningReminder &&
                 isValid(form.openingDate) &&
@@ -79,7 +79,7 @@ jobs:
             }
 
             // Helper function: check form contents if closing reminder can be sent
-            function canSendClosing(form) {
+            function canSendClosingReminder(form) {
               return (
                 form.wantsClosingReminder &&
                 isValid(form.closingDate) &&
@@ -127,27 +127,28 @@ jobs:
                   continue;
                 }
             
-                if (!isValid(form.openingDate) || !isValid(form.closingDate)) {
-                  core.warning(`Issue #${issue.number}: Invalid date format - skipping.`);
-                  continue;
+                // Log a warning if opening/closing dates need to be fixed
+                if (form.wantsOpeningReminder && !isValid(form.openingDate)) {
+                  core.warning(`Issue #${issue.number}: Invalid opening date format - edit the issue body at ${issue.html_url}.`);
+                }
+                if (form.wantsClosingReminder && !isValid(form.closingDate)) {
+                  core.warning(`Issue #${issue.number}: Invalid closing date format - edit the issue body at ${issue.html_url}.`);
                 }
             
                 const applied = await hasAppliedLabel(issue.number);
+                const [hasOpenMarker, hasCloseMarker] = await Promise.all([
+                  hasMarkerComment(issue.number, MARKER_OPEN),
+                  hasMarkerComment(issue.number, MARKER_CLOSE)
+                ]);
             
-                // Opening reminder
-                if (canSendOpening(form) &&
-                    !applied &&
-                    !(await hasMarkerComment(issue.number, MARKER_OPEN))
-                ) {
+                // Post opening reminder if conditions are met
+                if (canSendOpeningReminder(form) && !applied && !hasOpenMarker) {
                   await postOpeningReminder(issue.number);
                   core.notice(`Issue #${issue.number}: Posted opening reminder.`);
                 }
             
-                // Closing reminder
-                if (canSendClosing(form) &&
-                    !applied &&
-                    !(await hasMarkerComment(issue.number, MARKER_CLOSE))
-                ) {
+                // Post closing reminder if conditions are met
+                if (canSendClosingReminder(form) && !applied && !hasCloseMarker) {
                   await postClosingReminder(issue.number);
                   core.notice(`Issue #${issue.number}: Posted closing reminder.`);
                 }
