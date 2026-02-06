@@ -123,16 +123,16 @@ jobs:
                 const form = parseForm(issue);
             
                 if (!form) {
-                  core.warning(`Issue #${issue.number}: Body does not match expected format - skipping.`);
+                  core.warning(`Body does not match expected format for Issue #${issue.number} (${issue.title}): ${issue.html_url}.`);
                   continue;
                 }
             
                 // Log a warning if opening/closing dates need to be fixed
                 if (form.wantsOpeningReminder && !isValid(form.openingDate)) {
-                  core.warning(`Issue #${issue.number}: Invalid opening date format - edit the issue body at ${issue.html_url}.`);
+                  core.warning(`Invalid opening date format for Issue #${issue.number} (${issue.title}): ${issue.html_url}`);
                 }
                 if (form.wantsClosingReminder && !isValid(form.closingDate)) {
-                  core.warning(`Issue #${issue.number}: Invalid closing date format - edit the issue body at ${issue.html_url}.`);
+                  core.warning(`Invalid closing date format for Issue #${issue.number} (${issue.title}): ${issue.html_url}`);
                 }
             
                 const applied = await hasAppliedLabel(issue.number);
@@ -144,15 +144,15 @@ jobs:
                 // Post opening reminder if conditions are met
                 if (canSendOpeningReminder(form) && !applied && !hasOpenMarker) {
                   await postOpeningReminder(issue.number);
-                  core.notice(`Issue #${issue.number}: Posted opening reminder.`);
+                  core.notice(`Posted opening reminder for Issue #${issue.number} (${issue.title}): ${issue.html_url}`);
                 }
             
                 // Post closing reminder if conditions are met
                 if (canSendClosingReminder(form) && !applied && !hasCloseMarker) {
                   await postClosingReminder(issue.number);
-                  core.notice(`Issue #${issue.number}: Posted closing reminder.`);
+                  core.notice(`Posted closing reminder for Issue #${issue.number} (${issue.title}): ${issue.html_url}`);
                 }
               } catch (error) {
-                core.error(`Issue #${issue.number}: Failed to process - ${error.message}`);
+                core.error(`${error.message} - failed to process Issue #${issue.number} (${issue.title}): ${issue.html_url}`);
               }
             }
