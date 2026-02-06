@@ -28,7 +28,7 @@ jobs:
             
             const MARKER_OPEN = '<!-- automation: opening reminder -->';
             const MARKER_CLOSE = '<!-- automation: closing reminder -->';
-                        
+            
             const ISSUE_FORM_REGEX = new RegExp(
               '### Opening date\\n+' +
               '(?<openingDate>[^\\n]+)\\n+' +
@@ -119,26 +119,39 @@ jobs:
             });
 
             for (const issue of issues) {
-              const form = parseForm(issue);
-              if (!form) continue;
+              try {
+                const form = parseForm(issue);
             
-              const applied = await hasAppliedLabel(issue.number);
+                if (!form) {
+                  core.warning(`Issue #${issue.number}: Body does not match expected format - skipping.`);
+                  continue;
+                }
             
-              // Opening reminder
-              if (canSendOpening(form) &&
-                  !applied &&
-                  !(await hasMarkerComment(issue.number, MARKER_OPEN))
-              ) {
-                await postOpeningReminder(issue.number);
-                core.info(`Posted opening reminder for issue #${issue.number}.`);
-              }
+                if (!isValid(form.openingDate) || !isValid(form.closingDate)) {
+                  core.warning(`Issue #${issue.number}: Invalid date format - skipping.`);
+                  continue;
+                }
             
-              // Closing reminder
-              if (canSendClosing(form) &&
-                  !applied &&
-                  !(await hasMarkerComment(issue.number, MARKER_CLOSE))
-              ) {
-                await postClosingReminder(issue.number);
-                core.info(`Posted closing reminder for issue #${issue.number}.`);
+                const applied = await hasAppliedLabel(issue.number);
+            
+                // Opening reminder
+                if (canSendOpening(form) &&
+                    !applied &&
+                    !(await hasMarkerComment(issue.number, MARKER_OPEN))
+                ) {
+                  await postOpeningReminder(issue.number);
+                  core.notice(`Issue #${issue.number}: Posted opening reminder.`);
+                }
+            
+                // Closing reminder
+                if (canSendClosing(form) &&
+                    !applied &&
+                    !(await hasMarkerComment(issue.number, MARKER_CLOSE))
+                ) {
+                  await postClosingReminder(issue.number);
+                  core.notice(`Issue #${issue.number}: Posted closing reminder.`);
+                }
+              } catch (error) {
+                core.error(`Issue #${issue.number}: Failed to process - ${error.message}`);
               }
             }
