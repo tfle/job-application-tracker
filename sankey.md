@@ -2,7 +2,8 @@
 ---
 config:
   sankey:
-    nodeAlignment: justify
+    linkColor: target
+    nodeAlignment: left
     prefix: ' ('
     suffix: ')'
 ---
