@@ -1,0 +1,7 @@
+---
+config:
+  sankey:
+    nodeAlignment: justify
+    prefix: ' ('
+    suffix: ')'
+---
