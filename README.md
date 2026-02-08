@@ -1,17 +1,29 @@
 # Job Application Tracker
 
 Track and manage your job applications using GitHub Issues![^1]
-- Add labels to each issue when you move to the next stage (e.g. `Applied`, `Interview`, `Offer`)
-- View your job search progress with an automatically generated Sankey diagram
-- Get optional email reminders when applications open/close
+
+[![Add New Application](https://img.shields.io/badge/Add_New_Application-%230A69DA?style=plastic)](../../issues/new?template=job-application.yml)
+[![View Sankey Diagram](https://img.shields.io/badge/View_Sankey_Diagram-%231B7F37?style=plastic)](sankey.md)
+[![Setup Labels](https://img.shields.io/badge/Setup_Labels-%23E0E6EA?style=plastic)](../../actions/workflows/setup-labels.yml)
+
+## Features
+
+- **Stage tracking:** Add labels to each issue when you move to the next stage (e.g. `Applied`, `Interview`, `Offer`)
+- **Visual pipeline:** View your job search progress with an automatically generated Sankey diagram
+- **Email reminders:** Get optional notifications when applications open/close
 
 ## Get Started
 
-Clone this repo or click on `Use this template` and then `Create a new repository`. Follow the next step in your own repository.
+### 0. Create Repository
 
-### Configure Labels
+Create a new repository based on this template (Use this template > Create a new repository). Follow the remaining steps in your own repository.
 
-Manually run the `Setup Labels` workflow in the [Actions tab](../../actions/workflows/setup-labels.yml). This deletes all existing labels and adds the custom labels found in [labels.yml](.github/labels.yml). The default ones are:
+> [!TIP]
+> Make your repository private to keep your job search confidential!
+
+### 1. Setup Labels
+
+Click on [Setup Labels](../../actions/workflows/setup-labels.yml) and manually run the workflow. This configures your application stages from [.github/labels.yml](.github/labels.yml). The default label names are:
 
 ```yaml
 - name: "Applied"
@@ -27,20 +39,30 @@ Manually run the `Setup Labels` workflow in the [Actions tab](../../actions/work
 ```
 
 > [!NOTE]
-> The order is used in generating the Sankey diagram. Importantly, any "terminal stage" label (e.g. `Offer`, `Rejected`, `Accepted`, and `Declined`) should go at the end, but the ordering within this group doesn't really matter as it's assumed that only one of these labels will be added to an issue. If you edit the `labels.yml` file, the `Setup Labels` workflow will run automatically.
+> The order is used in generating the Sankey diagram. Importantly, any "terminal stage" label (e.g. `Offer`, `Rejected`, `Accepted`, and `Declined`) should go at the end, but the ordering within this group doesn't really matter as it's assumed that only one of these labels will be added to an issue. If you edit [.github/labels.yml](.github/labels.yml), the Setup Labels workflow will run automatically.
 
-### Usage
+### 2. Add Applications
 
-Create a `New issue` for each new job application. The custom issue template will ask for some optional details, including application open/close dates and notification reminders.
+Click on [Add New Application](../../issues/new?template=job-application.yml) to create an issue for each job. You can enter the opening/closing dates and enable reminders in the issue template.
 
-Reminders are done via an automated comment on the issue (which will trigger an email notification). By default, the [reminder workflow](./github/workflows/send-reminders.yml) checks if a comment needs to be posted each day at UTC+00:00.
+### 3. Track Progress
 
-Once there's progression on a job application (two or more labels on an issue), the [Sankey workflow](.github/workflows/generate-sankey.yml) will update changes in [sankey.md](sankey.md).
+Add labels as you move through application stages. Click on [View Sankey Diagram](sankey.md) to see an overview of your application pipeline.
 
 > [!IMPORTANT]
-> Labels can be applied (or unapplied) as per normal, however, they should only ever be modified via the `labels.yml` file. This ensures that the Sankey diagram is generated correctly.
+> Labels can be applied (or unapplied) to issues as per normal, however, they should only ever be modified through editing [.github/labels.yml](.github/labels.yml). This ensures that the Sankey diagram is generated correctly.
+
+## How This Works
+
+### Reminders
+
+The [send reminders workflow](.github/workflows/send-reminders.yml) runs daily at UTC+00:00 and posts automated comments (triggering an email notification) for any applications that have valid opening/closing dates and reminders enabled. Issues with the `Applied` label are skipped.
+
+### Sankey Diagram
+
+The [generate Sankey workflow](.github/workflows/generate-sankey.yml) will update changes in [sankey.md](sankey.md) when there's progression on a job application (issues are opened/closed or labelled/unlabelled). Only issues with 2 or more labels will appear in the Sankey diagram.
 
 > [!TIP]
-> New job applications with just an "Applied" label won't be considered (as there's no source-to-target "flow" to visualise). To get around this, you can add an "In Progress" label at the end of the [labels.yml](.github/labels.yml) file. You can then apply the "In Progress" label to relevant issues (remember to unapply it when you have an outcome)!
+> New job applications with just an `Applied` label won't be considered (as there's no source-to-target "flow" to visualise). To get around this, you can add an `In Progress` label at the end of [.github/labels.yml](.github/labels.yml). You can then apply the `In Progress` label to all your active applications (remember to remove it when you receive a final outcome)!
 
 [^1]: You're already on GitHub, why not? 😄
