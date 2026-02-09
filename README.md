@@ -1,6 +1,6 @@
 # Job Application Tracker
 
-Track and manage your job applications using GitHub Issues![^1
+Track and manage your job applications using GitHub Issues![^1]
 
 <img src="https://github.com/tfle/job-application-tracker/blob/main/.github/images/sankey-example.png" width="50%" align="right"/>
 
