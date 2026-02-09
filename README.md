@@ -1,14 +1,10 @@
-# Job Application Tracker
-
-Track and manage your job applications using GitHub Issues![^1]
+# Job Application Tracker [![Add New Application](https://img.shields.io/badge/Add_New_Application-%230A69DA?style=plastic)](../../issues/new?template=job-application.yml) [![View Sankey Diagram](https://img.shields.io/badge/View_Sankey_Diagram-%231B7F37?style=plastic)](sankey.md) [![Setup Labels](https://img.shields.io/badge/Setup_Labels-%23E0E6EA?style=plastic)](../../actions/workflows/setup-labels.yml)
 
 <img src="https://github.com/tfle/job-application-tracker/blob/main/.github/images/sankey-example.png" width="50%" align="right"/>
 
-[![Add New Application](https://img.shields.io/badge/Add_New_Application-%230A69DA?style=plastic)](../../issues/new?template=job-application.yml)
-[![View Sankey Diagram](https://img.shields.io/badge/View_Sankey_Diagram-%231B7F37?style=plastic)](sankey.md)
-[![Setup Labels](https://img.shields.io/badge/Setup_Labels-%23E0E6EA?style=plastic)](../../actions/workflows/setup-labels.yml)
+Track and manage your job applications using GitHub Issues![^1]
 
-Features:
+**Features:**
 
 - **Stage tracking:** Add labels to each issue when you move to the next stage (e.g. `Applied`, `Interview`, `Offer`)
 - **Visual pipeline:** View your job search progress with an automatically generated Sankey diagram
