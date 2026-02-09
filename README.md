@@ -1,8 +1,8 @@
 # Job Application Tracker
 
-<img src="https://github.com/tfle/job-application-tracker/blob/main/.github/images/sankey-example.png" width="50%" align="right"/>
+Track and manage your job applications using GitHub Issues![^1
 
-Track and manage your job applications using GitHub Issues![^1]
+<img src="https://github.com/tfle/job-application-tracker/blob/main/.github/images/sankey-example.png" width="50%" align="right"/>
 
 [![Add New Application](https://img.shields.io/badge/Add_New_Application-%230A69DA?style=plastic)](../../issues/new?template=job-application.yml)
 [![View Sankey Diagram](https://img.shields.io/badge/View_Sankey_Diagram-%231B7F37?style=plastic)](sankey.md)
