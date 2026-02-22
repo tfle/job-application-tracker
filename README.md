@@ -1,4 +1,4 @@
-# Job Application Tracker [![Add New Application](https://img.shields.io/badge/Add_New_Application-%230A69DA?style=plastic)](../../issues/new?template=job-application.yml) [![View Sankey Diagram](https://img.shields.io/badge/View_Sankey_Diagram-%231B7F37?style=plastic)](sankey.md) [![Setup Labels](https://img.shields.io/badge/Setup_Labels-%23E0E6EA?style=plastic)](../../actions/workflows/setup-labels.yml)
+# Job Application Tracker [![Add New Application](https://img.shields.io/badge/Add_New_Application-%230A69DA?style=plastic)](../../issues/new?template=job-application.yml) [![View Sankey Diagram](https://img.shields.io/badge/View_Sankey_Diagram-%231B7F37?style=plastic)](sankey.md)
 
 <img src="https://github.com/tfle/job-application-tracker/blob/main/.github/images/sankey-example.png" width="50%" align="right"/>
 
@@ -12,16 +12,29 @@ Track and manage your job applications using GitHub Issues![^1]
 
 ## Get Started
 
-### 0. Create Repository
+### 1. Create Repository
 
-Create a new repository based on this template (Use this template > Create a new repository). Follow the remaining steps in your own repository.
+Create a new repository based on this template (Use this template > Create a new repository).
 
 > [!TIP]
 > Make your repository private to keep your job search confidential!
 
-### 1. Setup Labels
+### 2. Add Applications
 
-Click on [Setup Labels](../../actions/workflows/setup-labels.yml) and manually run the workflow. This configures your application stages from [.github/labels.yml](.github/labels.yml). The default label names are:
+Click on [Add New Application](../../issues/new?template=job-application.yml) to create an issue for each job. You can enter the opening/closing dates and enable reminders in the issue template.
+
+### 3. Track Progress
+
+Add labels as you move through application stages. Click on [View Sankey Diagram](sankey.md) to see an overview of your application pipeline.
+
+> [!IMPORTANT]
+> Labels can be applied (or unapplied) to issues as per normal, however, they should only ever be modified through editing [.github/labels.yml](.github/labels.yml). This ensures that the Sankey diagram is generated correctly.
+
+## How This Works
+
+### Custom Labels
+
+The initial commit will automatically run the [Setup Labels](../../actions/workflows/setup-labels.yml) workflow. This configures your application stages from [.github/labels.yml](.github/labels.yml). The default label names are:
 
 ```yaml
 - name: "Applied"
@@ -37,20 +50,7 @@ Click on [Setup Labels](../../actions/workflows/setup-labels.yml) and manually r
 ```
 
 > [!NOTE]
-> The order is used in generating the Sankey diagram. Importantly, any "terminal stage" label (e.g. `Offer`, `Rejected`, `Accepted`, and `Declined`) should go at the end, but the ordering within this group doesn't really matter as it's assumed that only one of these labels will be added to an issue. If you edit [.github/labels.yml](.github/labels.yml), the Setup Labels workflow will run automatically.
-
-### 2. Add Applications
-
-Click on [Add New Application](../../issues/new?template=job-application.yml) to create an issue for each job. You can enter the opening/closing dates and enable reminders in the issue template.
-
-### 3. Track Progress
-
-Add labels as you move through application stages. Click on [View Sankey Diagram](sankey.md) to see an overview of your application pipeline.
-
-> [!IMPORTANT]
-> Labels can be applied (or unapplied) to issues as per normal, however, they should only ever be modified through editing [.github/labels.yml](.github/labels.yml). This ensures that the Sankey diagram is generated correctly.
-
-## How This Works
+> The order is used in generating the Sankey diagram. Importantly, any "terminal stage" label (e.g. `Offer`, `Rejected`, `Accepted`, and `Declined`) should go at the end, but the ordering within this group doesn't really matter as it's assumed that only one of these labels will be added to an issue. If you edit [.github/labels.yml](.github/labels.yml), the Setup Labels workflow will run automatically (again).
 
 ### Reminders
 
