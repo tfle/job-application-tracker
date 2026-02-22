@@ -1,7 +1,6 @@
 name: Setup Labels
 
 on:
-  workflow_dispatch:
   push:
     paths:
       - .github/labels.yml
