@@ -34,7 +34,7 @@ Add labels as you move through application stages. Click on [View Sankey Diagram
 
 ### Custom Labels
 
-The initial commit will automatically run the [Setup Labels](../../actions/workflows/setup-labels.yml) workflow. This configures your application stages from [.github/labels.yml](.github/labels.yml). The default label names are:
+The initial commit will automatically run the [setup labels workflow](.github/workflows/setup-labels.yml). This configures your application stages from [.github/labels.yml](.github/labels.yml). The default label names are:
 
 ```yaml
 - name: "Applied"
